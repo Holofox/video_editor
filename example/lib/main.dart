@@ -1,11 +1,10 @@
 import 'dart:io';
 
-import 'package:video_editor_example/crop.dart';
-import 'package:video_editor_example/widgets/export_result.dart';
 import 'package:flutter/material.dart';
 import 'package:helpers/helpers.dart' show OpacityTransition;
 import 'package:image_picker/image_picker.dart';
 import 'package:video_editor/video_editor.dart';
+import 'package:video_editor_example/crop.dart';
 
 void main() => runApp(
       MaterialApp(
@@ -109,50 +108,6 @@ class _VideoEditorState extends State<VideoEditor> {
     _isExporting.dispose();
     _controller.dispose();
     super.dispose();
-  }
-
-  void _showErrorSnackBar(String message) =>
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          duration: const Duration(seconds: 1),
-        ),
-      );
-
-  void _exportVideo() async {
-    _exportingProgress.value = 0;
-    _isExporting.value = true;
-    // NOTE: To use `-crf 1` and [VideoExportPreset] you need `ffmpeg_kit_flutter_min_gpl` package (with `ffmpeg_kit` only it won't work)
-    await _controller.exportVideo(
-      // format: VideoExportFormat.gif,
-      // preset: VideoExportPreset.medium,
-      // customInstruction: "-crf 17",
-      onProgress: (stats, value) => _exportingProgress.value = value,
-      onError: (e, s) => _showErrorSnackBar("Error on export video :("),
-      onCompleted: (file) {
-        _isExporting.value = false;
-        if (!mounted) return;
-
-        showDialog(
-          context: context,
-          builder: (_) => VideoResultPopup(video: file),
-        );
-      },
-    );
-  }
-
-  void _exportCover() async {
-    await _controller.extractCover(
-      onError: (e, s) => _showErrorSnackBar("Error on cover exportation :("),
-      onCompleted: (cover) {
-        if (!mounted) return;
-
-        showDialog(
-          context: context,
-          builder: (_) => CoverResultPopup(cover: cover),
-        );
-      },
-    );
   }
 
   @override
@@ -332,22 +287,6 @@ class _VideoEditorState extends State<VideoEditor> {
               ),
             ),
             const VerticalDivider(endIndent: 22, indent: 22),
-            Expanded(
-              child: PopupMenuButton(
-                tooltip: 'Open export menu',
-                icon: const Icon(Icons.save),
-                itemBuilder: (context) => [
-                  PopupMenuItem(
-                    onTap: _exportCover,
-                    child: const Text('Export cover'),
-                  ),
-                  PopupMenuItem(
-                    onTap: _exportVideo,
-                    child: const Text('Export video'),
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),
